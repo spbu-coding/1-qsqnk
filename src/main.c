@@ -1,19 +1,16 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-#define M_PI 3.141592653589
 #define MAX_RESULT_STRING_LENGTH 32
 #define error(...) (fprintf(stderr, __VA_ARGS__))
 #define array_length(x) (sizeof(x) / sizeof(x[0]))
 
-double rectangle_rule(double left_border, double right_border) {
+double calculate_rectangle_rule(double left_border, double right_border) {
 	return (right_border - left_border) * sin((left_border + right_border) / 2);
 }
 
-double simpsons_rule(double left_border, double right_border) {
+double calculate_simpsons_rule(double left_border, double right_border) {
 	return (right_border - left_border) / 6 * (sin(left_border) + 4 * sin((left_border + right_border) / 2) + sin(right_border));
 }
 
@@ -24,12 +21,12 @@ char* calculate_integral(double left_border, double right_border, int fragments_
 	double temp_left_border = left_border;
 	double temp_right_border = left_border + step;
 	for (int i = 0; i < fragments_count; i++) {
-		result_rectangle_rule += rectangle_rule(temp_left_border, temp_right_border);
-		result_simpsons_rule += simpsons_rule(temp_left_border, temp_right_border);
+		result_rectangle_rule += calculate_rectangle_rule(temp_left_border, temp_right_border);
+		result_simpsons_rule += calculate_simpsons_rule(temp_left_border, temp_right_border);
 		temp_left_border = temp_right_border;
 		temp_right_border += step;
 	}
-	char* result_string = (char*)malloc(80 * sizeof(char));
+	char* result_string = (char*)malloc(MAX_RESULT_STRING_LENGTH * sizeof(char));
 	if (!sprintf(result_string, "%d %1.5lf %1.5lf", fragments_count, result_rectangle_rule, result_simpsons_rule)) {
 		error("Cannot write results to string in experiment\n");
 		return NULL;
@@ -39,7 +36,7 @@ char* calculate_integral(double left_border, double right_border, int fragments_
 
 int read_interval(double* left_border, double* right_border) {
 	if (printf("Enter interval's left border: ") < 0) {
-		error("Cannot wtite to stdout to stdout");
+		error("Cannot write to stdout to stdout");
 		return -1;
 	}
 	if (scanf("%lf", left_border) != 1) {
@@ -51,7 +48,7 @@ int read_interval(double* left_border, double* right_border) {
 		return -1;
 	}
 	if (printf("Enter interval's right border: ") < 0) {
-		error("Cannot wtite to stdout");
+		error("Cannot write to stdout");
 		return -1;
 	}
 	if ((scanf("%lf", right_border)) != 1) {
@@ -69,11 +66,11 @@ int read_interval(double* left_border, double* right_border) {
 	return 0;
 }
 
-void free_results(char** results, int count) {
-	for (unsigned int i = 0; i < count; i++) {
-		free(results[i]);
+void free_array_of_strings(char** array_of_strings, int count_of_strings_in_array) {
+	for (unsigned int i = 0; i < count_of_strings_in_array; i++) {
+		free(array_of_strings[i]);
 	}
-	free(results);
+	free(array_of_strings);
 }
 
 char** calculate_integrals(double left_border, double right_border, int* fragment_count_sizes, int count) {
@@ -84,7 +81,7 @@ char** calculate_integrals(double left_border, double right_border, int* fragmen
 	for (int i = 0; i < count; i++) {
 		results[i] = (char*)malloc(MAX_RESULT_STRING_LENGTH * sizeof(char));
 		if (!results[i]) {
-			free_results(results, i);
+			free_array_of_strings(results, i);
 			error("Cannot allocate memory for result string in %d experiment\n", i);
 			return NULL;
 		}
@@ -110,6 +107,6 @@ int main() {
 			break;
 		}
 	}
-	free_results(results, count);
+	free_array_of_strings(results, count);
 	return 0;
 }
